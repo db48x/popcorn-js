@@ -757,6 +757,28 @@
     };
   };
   
+  popcorn.PlayCommand = function(name, params, text, videoManager) {
+    popcorn.VideoCommand.call(this, name, params, text, videoManager);
+
+    var target = document.createElement(this.params.type || "video");
+    target.setAttribute('src', this.params.src);
+    target.setAttribute('width', this.params.width);
+    target.setAttribute('height', this.params.height);
+    target.setAttribute('id', this.id);
+    target.setAttribute('preload', 'auto');
+    document.getElementById(this.params.target).appendChild(target);
+    target.setAttribute('style', 'display:none');
+    this.target = target;
+    this.onIn = function() {
+      this.target.setAttribute('style', 'display:inline');
+      target.play();
+    };
+    this.onOut = function() {
+      target.pause();
+      this.target.setAttribute('style', 'display:none');
+    };
+  };
+
   // Wrapper for accessing commands by name
   // commands[name].create() returns a new command of type name
   // Not sure if this is the best way; maybe it's too fancy?
@@ -830,6 +852,11 @@
     webpage: {
       create: function(name, params, text, videoManager) {
         return new popcorn.WebPageCommand(name, params, text, videoManager);
+      }
+    },
+    play: {
+      create: function(name, params, text, videoManager) {
+        return new popcorn.PlayCommand(name, params, text, videoManager);
       }
     }
   };

@@ -760,23 +760,38 @@
   popcorn.PlayCommand = function(name, params, text, videoManager) {
     popcorn.VideoCommand.call(this, name, params, text, videoManager);
 
-    var target = document.createElement(this.params.type || "video");
-    target.setAttribute('src', this.params.src);
-    target.setAttribute('width', this.params.width);
-    target.setAttribute('height', this.params.height);
-    target.setAttribute('id', this.id);
-    target.setAttribute('preload', 'auto');
-    document.getElementById(this.params.target).appendChild(target);
-    target.setAttribute('style', 'display:none');
+    var target = $(this.params.type == "audio" ? "<audio/>" : "<video/>",
+                   { src: this.params.src,
+                     width: this.params.width,
+                     height: this.params.height,
+                     id: this.id,
+                     preload: 'auto'                    
+                   });
+    target.hide();
+    $("#"+ this.params.target).append(target);
+
     this.target = target;
+    this.isIn = false;
     this.onIn = function() {
-      this.target.setAttribute('style', 'display:inline');
-      target.play();
+      target.show();
+      target.get(0).play();
+      this.isIn = true;
     };
     this.onOut = function() {
-      target.pause();
-      this.target.setAttribute('style', 'display:none');
+      target.get(0).pause();
+      target.hide();
+      this.isIn = false;
     };
+
+    var self = this;
+    var vid = $(videoManager.videoElement);
+    vid.bind("play", function() { if (self.isIn) target.get(0).play(); })
+       .bind("pause", function() { target.get(0).pause(); })
+       .bind("volumechange", function(event)
+       {
+         target.get(0).volume = vid.volume;
+         target.get(0).muted = vid.muted;
+       });
   };
 
   // Wrapper for accessing commands by name

@@ -28,7 +28,7 @@
     this.videoElement = videoElement;
     videoElement.videoManager = this;
     popcorn.addInstance(this);
-    videoElement.setAttribute("ontimeupdate", "popcorn.update(this);"); 
+    videoElement.setAttribute("ontimeupdate", "popcorn.update(this);");
   };
 
   popcorn.VideoManager.prototype.addCommand = function(command) {
@@ -61,9 +61,9 @@
   };
 
   popcorn.VideoManager.prototype.loaded = function() {};
-  
+
   var inactiveTarget = {};
-  
+
   // Update is called on the video every time it's time changes.
   popcorn.update = function(vid) {
     var t = vid.currentTime,
@@ -90,7 +90,7 @@
         }
         if (!commandObject.running && commandObject.params["in"] < t && commandObject.params["out"] > t) {
           commandObject.running = true;
-          
+
           $("#" + commandObject.params.target + " .inactive").hide();
           inactiveTarget[commandObject.params.target]++;
 
@@ -100,7 +100,7 @@
           if (typeof commandObject.flash === "undefined") {
              var section = $(commandObject.target).parents('section');
              if (!section.hasClass('hover')) {
-                section.addClass('hover');    
+                section.addClass('hover');
                 section.attr('hoveron', $('video')[0].currentTime);
              }
           }
@@ -129,7 +129,7 @@
   popcorn.getInstance = function(index) {
     return popcorn.instances[index];
   };
-  
+
   // Simple function to convert 0:05 to 0.5 in seconds
   // acceptable formats are HH:MM:SS:MM, MM:SS:MM, SS:MM, SS
   var toSeconds = function(time) {
@@ -213,9 +213,9 @@
     // Creates a div for all subtitles to use
     if (!popcorn.SubtitleCommand.subDiv) {
       popcorn.SubtitleCommand.subDiv = document.createElement('div');
-      
+
       style = 'position:absolute;top:240px;left:1px;color:white;font-weight:bold;font-family:sans-serif;text-shadow:black 2px 2px 6px;font-size:18px;width:100%;';
-      popcorn.SubtitleCommand.subDiv.setAttribute('style', style);  
+      popcorn.SubtitleCommand.subDiv.setAttribute('style', style);
       this.videoManager.videoElement.parentNode.appendChild(popcorn.SubtitleCommand.subDiv);
     }
     if (this.params.target) {
@@ -229,7 +229,7 @@
       if (this.params.languagesrc) {
         var i = document.getElementById(this.params.languagesrc).selectedIndex,
             that = this;
-        if (document.getElementById(this.params.languagesrc).options[i].value !== (this.params.language || "") || 
+        if (document.getElementById(this.params.languagesrc).options[i].value !== (this.params.language || "") ||
            (this.params.accessibilitysrc && document.getElementById(this.params.accessibilitysrc).checked)) {
           google.language.translate(this.text, '', document.getElementById(this.params.languagesrc).options[i].value, function(result) {
             that.target.innerHTML = result.translation;
@@ -254,11 +254,11 @@
 
   popcorn.LowerThirdCommand = function(name, params, text, videoManager) {
     popcorn.VideoCommand.call(this, name, params, text, videoManager);
-    
+
     // Creates a div for all lower thirds
     if (!popcorn.LowerThirdCommand.ltDiv) {
       popcorn.LowerThirdCommand.ltDiv = document.createElement('div');
-      popcorn.LowerThirdCommand.ltDiv.setAttribute('style', 
+      popcorn.LowerThirdCommand.ltDiv.setAttribute('style',
         'padding-left:40px;padding-right:40px;padding-top:40px;position:absolute;top:150px;left:1px;color:white;font-weight:bold;font-family:sans-serif;text-shadow:black 1px 1px 3px;font-size:22px;width:450px;');
       this.videoManager.videoElement.parentNode.appendChild(popcorn.LowerThirdCommand.ltDiv);
     }
@@ -267,7 +267,7 @@
     } else {
       this.target = popcorn.LowerThirdCommand.ltDiv;
     }
-    
+
     this.onIn = function() {
       $(this.target).css("text-align", (this.params.align || 'left'));
       if (this.params.languagesrc) {
@@ -349,11 +349,11 @@
   };
   popcorn.TagCommand = function(name, params, text, videoManager) {
     popcorn.VideoCommand.call(this, name, params, text, videoManager);
-    
+
     if (!popcorn.TagCommand[this.params.target]) {
       popcorn.TagCommand[this.params.target] = new people();
     }
-    
+
     this.onIn = function() {
       popcorn.TagCommand[this.params.target].contains[this.text] = this.text;
       document.getElementById(this.params.target).innerHTML  = popcorn.TagCommand[this.params.target].toString();
@@ -413,7 +413,7 @@
   ////////////////////////////////////////////////////////////////////////////
   // Lastfm Command
   ////////////////////////////////////////////////////////////////////////////
-  
+
   popcorn.LastfmCommand = function(name, params, text, videoManager) {
     popcorn.VideoCommand.call(this, name, params, text, videoManager);
     // Setup a default, hidden div to hold the images
@@ -423,7 +423,7 @@
     // Div is hidden by default
     target.setAttribute('style', 'display:none');
 	  var htmlString = '';
-	
+
     // This uses jquery
 	  $.getJSON("http://ws.audioscrobbler.com/2.0/?method=artist.getinfo&artist="+ this.params.artist +"&api_key=30ac38340e8be75f9268727cb4526b3d&format=json&callback=?",
 	    function(data){
@@ -443,7 +443,7 @@
 	      target.innerHTML = htmlString;
 	    }
 	  );
-	
+
     this.target = target;
     this.onIn = function() {
       this.target.setAttribute('style', 'display:inline');
@@ -453,7 +453,7 @@
     };
 	this.preload = function() {}; // Probably going to need to preload this.
   };
-  
+
   ////////////////////////////////////////////////////////////////////////////
   // Twitter Command
   ////////////////////////////////////////////////////////////////////////////
@@ -475,7 +475,7 @@
       that.target = document.createElement('div');
       that.target.setAttribute('id', that.id);
       document.getElementById(that.params.target).appendChild(that.target);
-      
+
       // Div is hidden by default
       that.target.setAttribute('style', 'display:none');
       var widget = new TWTR.Widget({
@@ -520,11 +520,11 @@
       that.preload = function() {}; // Probably going to need to preload this.
     });
   };
-  
+
   ////////////////////////////////////////////////////////////////////////////
   // Flickr Command
   ////////////////////////////////////////////////////////////////////////////
-  
+
   popcorn.FlickrCommand = function(name, params, text, videoManager) {
     popcorn.VideoCommand.call(this, name, params, text, videoManager);
     // Setup a default, hidden div to hold the images
@@ -568,11 +568,11 @@
       this.target.setAttribute('style', 'display:none');
     };
   };
-	
+
   ////////////////////////////////////////////////////////////////////////////
   // Wiki Command
   ////////////////////////////////////////////////////////////////////////////
-  
+
   popcorn.WikiCommand = function(name, params, text, videoManager) {
     popcorn.VideoCommand.call(this, name, params, text, videoManager);
 
@@ -583,7 +583,7 @@
       // Universal Subtitles has no target attribute, so we create a default
       this.params.target = "wikidiv";
     }
-    
+
     //L10n
     var src = this.params.src;
     var lang = this.params.lang;
@@ -685,7 +685,7 @@
       } else {
         attribution += ", license: " + this.params.license;
       }
-    }  
+    }
     if (this.params.licenseurl) {
       attribution += ", <a href='" + this.params.licenseurl + "' target='_blank'>License URL</a>";
     }
@@ -734,7 +734,7 @@
   ////////////////////////////////////////////////////////////////////////////
   // WebPage Command
   ////////////////////////////////////////////////////////////////////////////
-  
+
   popcorn.WebPageCommand = function(name, params, text, videoManager) {
     popcorn.VideoCommand.call(this, name, params, text, videoManager);
 
@@ -747,7 +747,7 @@
     document.getElementById(this.params.target).appendChild(target);
     // iframe is hidden by default
     target.setAttribute('style', 'display:none');
-    // toggle display of the iframe 
+    // toggle display of the iframe
     this.target = target;
     this.onIn = function() {
       this.target.setAttribute('style', 'display:inline');
@@ -756,7 +756,11 @@
       this.target.setAttribute('style', 'display:none');
     };
   };
-  
+
+  ////////////////////////////////////////////////////////////////////////////
+  // Play Command
+  ////////////////////////////////////////////////////////////////////////////
+
   popcorn.PlayCommand = function(name, params, text, videoManager) {
     popcorn.VideoCommand.call(this, name, params, text, videoManager);
 
@@ -765,7 +769,7 @@
                      width: this.params.width,
                      height: this.params.height,
                      id: this.id,
-                     preload: 'auto'                    
+                     preload: 'auto'
                    });
     target.hide();
     $("#"+ this.params.target).append(target);
@@ -791,6 +795,48 @@
        {
          target.get(0).volume = vid.volume;
          target.get(0).muted = vid.muted;
+       });
+  };
+
+  ////////////////////////////////////////////////////////////////////////////
+  // Playlist Command
+  ////////////////////////////////////////////////////////////////////////////
+
+  popcorn.PlaylistCommand = function(name, params, text, videoManager) {
+    popcorn.VideoCommand.call(this, name, params, text, videoManager);
+
+    var target = $("#"+ this.params.target);
+    var tracks = target.children("audio, video");
+    var len = tracks.length;
+    var current = tracks[0];
+    tracks.each(function(i)
+    {
+      $(this).bind("ended", function() { (current = tracks[(i == len) ? 0 : i+1]).play(); });
+    });
+
+    this.target = target;
+    this.isIn = false;
+    this.onIn = function() {
+      current.play();
+      this.isIn = true;
+    };
+    this.onOut = function() {
+      tracks.each(function() { this.pause(); });
+      this.isIn = false;
+    };
+
+    var self = this;
+    var vid = $(videoManager.videoElement);
+    vid.bind("play", function() { if (self.isIn) current.play(); })
+       .bind("pause", function() { tracks.each(function() { this.pause(); }); })
+       .bind("ended", function() { tracks.each(function() { this.pause(); }); })
+       .bind("volumechange", function()
+       {
+         music.each(function()
+         {
+           this.volume = vid.volume;
+           this.muted = vid.muted;
+         });
        });
   };
 
@@ -872,6 +918,11 @@
     play: {
       create: function(name, params, text, videoManager) {
         return new popcorn.PlayCommand(name, params, text, videoManager);
+      }
+    },
+    playlist: {
+      create: function(name, params, text, videoManager) {
+        return new popcorn.PlaylistCommand(name, params, text, videoManager);
       }
     }
   };
@@ -1017,6 +1068,6 @@
   };
 
   document.addEventListener('DOMContentLoaded', init, false);
-  
+
 }());
 

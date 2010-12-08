@@ -1,22 +1,22 @@
 (function (Popcorn) {
-  Popcorn.plugin("play" , (function()
+  Popcorn.plugin("playanother", (function()
   {
-    var target = $(this.params.type == "audio" ? "<audio/>" : "<video/>",
-                   { src: this.params.src,
-                     width: this.params.width,
-                     height: this.params.height,
-                     id: this.id,
-                     preload: 'auto'
-                   });
-    target.hide();
-    $("#"+ this.params.target).append(target);
-
-    this.target = target;
-    this.isIn = false;
+    var target, isIn;
 
     return {
       _setup: function(event, options)
       {
+        target = $(options.type == "audio" ? "<audio/>" : "<video/>",
+                   { src: options.src,
+                     width: options.width,
+                     height: options.height,
+                     id: this.id,
+                     preload: 'auto'
+                   });
+
+        target.hide();
+        $("#"+ options.target).append(target);
+
         var self = this;
         var vid = $(this.video);
         vid.bind("play", function() { if (self.isIn) target.get(0).play(); })

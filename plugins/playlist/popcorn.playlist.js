@@ -2,16 +2,18 @@
 {
   Popcorn.plugin("playlist" , (function()
   {
-    var target = $("#"+ this.params.target);
-    var tracks = target.children("audio, video");
-    var len = tracks.length;
-    var current = tracks[0];
-
+    var target, tracks, len, current;
     var isIn = false;
 
     return {
       _setup: function(event, options)
       {
+        alert('_setup');
+        target = $("#"+ options.target);
+        tracks = target.children("audio, video");
+        len = tracks.length;
+        current = tracks[0];
+
         tracks.each(function(i)
         {
           $(this).bind("ended", function() { (current = tracks[(i == len) ? 0 : i+1]).play(); });
@@ -33,11 +35,13 @@
       },
       start: function(event, options)
       {
+        alert('start');
         current.play();
         this.isIn = true;
       },
       end: function(event, options)
       {
+        alert('end');
         tracks.each(function() { this.pause(); });
         this.isIn = false;
      },

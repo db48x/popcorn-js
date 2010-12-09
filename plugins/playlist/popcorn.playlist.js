@@ -12,7 +12,7 @@
       var len = tracks.length;
       tracks.each(function(i)
       {
-        $(this).bind("ended", function() { (current = tracks[(i == len) ? 0 : i+1]).play(); });
+        $(this).bind("ended", function() { (options._current = options._tracks[(i+1 == len) ? 0 : i+1]).play(); });
       });
 
       var self = this;

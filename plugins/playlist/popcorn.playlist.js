@@ -12,22 +12,22 @@
       var len = tracks.length;
       tracks.each(function(i)
       {
-        $(this).bind("ended", function() { (options._current = options._tracks[(i+1 == len) ? 0 : i+1]).play(); });
+        $(this).bind("ended", function() { (options._current = tracks[(i+1 == len) ? 0 : i+1]).play(); });
       });
 
       var self = this;
-      var vid = $(this.video);
-      vid.bind("play", function() { if (self.isIn) current.play(); })
-         .bind("pause", function() { tracks.each(function() { this.pause(); }); })
-         .bind("ended", function() { tracks.each(function() { this.pause(); }); })
-         .bind("volumechange", function()
-      {
-        music.each(function()
-        {
-          this.volume = vid.volume;
-          this.muted = vid.muted;
-        });
-      });
+      var video = this.video;
+      $(video).bind("play", function() { if (self.isIn) current.play(); })
+              .bind("pause", function() { tracks.each(function() { this.pause(); }); })
+              .bind("ended", function() { tracks.each(function() { this.pause(); }); })
+              .bind("volumechange", function()
+              {
+                tracks.each(function()
+                {
+                  this.volume = video.volume;
+                  this.muted = video.muted;
+                });
+              });
     },
     start: function(event, options)
     {

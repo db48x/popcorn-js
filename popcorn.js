@@ -37,6 +37,14 @@
         tracks: []
       };
       
+      var self = this;
+      if ('History' in $)
+      {
+        $.History.bind(function(state) {
+                         self.currentTime(state);
+                       });
+      }
+
       return this;
     }
   };

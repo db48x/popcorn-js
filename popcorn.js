@@ -42,6 +42,7 @@
       {
         $.History.bind(function(state) {
                          self.currentTime(state);
+                         self.play();
                        });
       }
 

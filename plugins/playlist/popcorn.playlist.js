@@ -20,6 +20,23 @@
       $(video).bind("play", function() { if (self.isIn) current.play(); })
               .bind("pause", function() { tracks.each(function() { this.pause(); }); })
               .bind("ended", function() { tracks.each(function() { this.pause(); }); })
+              .bind("seeked", function()
+              {
+                var time = video.currentTime;
+                var str ="";
+                tracks.each(function()
+                {
+                  str += [time, this.duration].toSource() +"\n";
+                  if (time < this.duration && time >= 0)
+                  {
+                    this.currentTime = time;
+                    this.play();
+                  }
+                  else
+                    this.pause();
+                  time -= this.duration;
+                });
+              })
               .bind("volumechange", function()
               {
                 tracks.each(function()

@@ -39,7 +39,7 @@ test("API", function () {
 
 test("Utility", function () {
   
-  expect(6);
+  expect(7);
   //  TODO: comprehensive tests for these utilities
   
   equals( typeof Popcorn.forEach, "function" , "Popcorn.forEach is a provided utility function");
@@ -48,6 +48,7 @@ test("Utility", function () {
   equals( typeof Popcorn.guid, "function" , "Popcorn.guid is a provided utility function");
   equals( typeof Popcorn.sizeOf, "function" , "Popcorn.sizeOf is a provided utility function");
   equals( typeof Popcorn.nop, "function" , "Popcorn.nop is a provided utility function");
+  equals( typeof Popcorn.addTrackEvent, "function" , "Popcorn.addTrackEvent is a provided utility function");
   
   
   
@@ -72,7 +73,7 @@ test("Object", function () {
 
   
   var popped = Popcorn("#video"), 
-      methods = "load play pause currentTime mute volume roundTime exec";
+      methods = "load play pause currentTime mute volume roundTime exec removePlugin";
   
   
   
@@ -82,8 +83,8 @@ test("Object", function () {
   ok( "data" in popped, "instance has `data` property" );
   ok( Object.prototype.toString.call(popped.data) === "[object Object]", "data property is an object" );
 
-  ok( "tracks" in popped.data, "instance has `tracks` property" );
-  ok( Object.prototype.toString.call(popped.data.tracks) === "[object Array]", "tracks property is an array" )
+  ok( "trackEvents" in popped.data, "instance has `trackEvents` property" );
+  ok( Object.prototype.toString.call(popped.data.trackEvents) === "[object Object]", "trackEvents property is an object" )
 
   
   popped.play();
@@ -158,12 +159,11 @@ test("Stored By Type", function () {
   var p = Popcorn("#video"), 
       count = 0,
       fired = 0, 
-      wants = 4
-      ;
+      wants = 4;
 
   function plus(){ 
 
-    if ( ++count == 4 ) {
+    if ( ++count === 4 ) {
       
       equals( fired, wants, "Number of callbacks fired from 1 handler" );
 
@@ -207,6 +207,10 @@ test("Stored By Type", function () {
   });
   
   p.trigger("play");
+
+  if (fired < 4) {
+    start();
+  }
   
   p.unlisten("play");
   
@@ -361,6 +365,78 @@ test("UI/Mouse", function () {
 });
 
 module("Popcorn Plugin")
+
+test("Update Timer", function () {
+
+  QUnit.reset();
+
+  var p2 = Popcorn("#video"),                         
+      expects = 4, 
+      count   = 0,
+      // These make sure events are only fired once
+      // any second call will produce a failed test
+      forwardStart  = false,
+      forwardEnd    = false,
+      backwardStart = false,
+      backwardEnd   = false;
+
+  function plus() {
+    if ( ++count === expects ) {
+      start(); 
+      // clean up added events after tests
+      p2.removePlugin("forwards");
+      p2.removePlugin("backwards");
+    }
+  }
+  
+  stop();  
+
+  Popcorn.plugin("forwards", function () {
+    return {
+      start: function () {
+        forwardStart = !forwardStart;
+        ok( forwardStart, "forward's start fired");
+        plus();
+      },
+      end: function () {
+        forwardEnd = !forwardEnd;
+        p2.currentTime(1).play();
+        ok( forwardEnd, "forward's end fired");
+        plus();
+      }
+    };
+  });
+
+  p2.forwards({
+    start: 3, 
+    end: 4
+  });
+
+  Popcorn.plugin("backwards", function () {
+    return {
+      start: function () {
+        backwardStart = !backwardStart;
+        p2.currentTime(0).play();
+        ok( true, "backward's start fired");
+        plus();
+      },
+      end: function () {
+        backwardEnd = !backwardEnd;
+        ok( backwardEnd, "backward's end fired");
+        plus();
+      }
+    };
+  });
+
+  p2.backwards({
+    start: 1, 
+    end: 2
+  });
+
+  p2.currentTime(3).play();
+
+});
+
 test("Plugin Factory", function () {
   
   QUnit.reset();
@@ -368,14 +444,13 @@ test("Plugin Factory", function () {
   // needs expectation
 
   var popped = Popcorn("#video"), 
-      methods = "load play pause currentTime mute volume roundTime exec",
-      expects = 22, 
+      methods = "load play pause currentTime mute volume roundTime exec removePlugin",
+      expects = 24, 
       count = 0;
   
   //expect(expects);
   
   function plus() { 
-    console.log(count);
     if ( ++count == expects ) {
       start(); 
     }
@@ -408,15 +483,16 @@ test("Plugin Factory", function () {
         ok( Object.prototype.toString.call(popped.data) === "[object Object]", "data property is an object" );
         plus();
 
-        ok( "tracks" in this.data, "executor instance has `tracks` property" );
+        ok( "trackEvents" in this.data, "executor instance has `trackEvents` property" );
         plus();
-        ok( Object.prototype.toString.call(popped.data.tracks) === "[object Array]", "executor tracks property is an array" )      
+        ok( Object.prototype.toString.call(popped.data.trackEvents) === "[object Object]", "executor trackEvents property is an object" )      
         plus();      
       }, 
       end: function () {
       
       }
     };
+
   });
  
   ok( "executor" in popped, "executor plugin is now available to instance" );
@@ -456,11 +532,10 @@ test("Plugin Factory", function () {
       ok( Object.prototype.toString.call(popped.data) === "[object Object]", "complicator data property is an object" );
       plus();
 
-      ok( "tracks" in this.data, " complicatorinstance has `tracks` property" );
+      ok( "trackEvents" in this.data, " complicatorinstance has `trackEvents` property" );
       plus();
-      ok( Object.prototype.toString.call(popped.data.tracks) === "[object Array]", "complicator tracks property is an array" )      
-      plus();
-      
+      ok( Object.prototype.toString.call(popped.data.trackEvents) === "[object Object]", "complicator trackEvents property is an object" )      
+      plus();     
     },
     end: function () {
     
@@ -503,7 +578,7 @@ test("Plugin Factory", function () {
       
       breaker.end++;
     
-      ok(true, "breaker started");
+      ok(true, "breaker ended");
       plus();
 
       
@@ -516,17 +591,57 @@ test("Plugin Factory", function () {
     } 
   });
 
+  ok( "breaker" in popped, "breaker plugin is now available to instance" );
+  plus();
+  ok( Popcorn.registry.length === 3, "Three items in the registry");
+  plus();
   
   popped.breaker({
     start: 1, 
     end: 2
-  });      
-  
-  
-  popped.currentTime(0).play();
+  });     
 
+  popped.currentTime(0).play();
+});
+
+test("removePlugin", function () {
+  
+  expect(10);
+  
+  var p = Popcorn("#video"), 
+      rlen = Popcorn.registry.length;
+  
+  equals( rlen, 3, "Popcorn.registry.length is 3");
+  
+  
+  equals( p.data.trackEvents.byStart.length, 2, "p.data.trackEvents.byStart is initialized and has 2 entries");
+  equals( p.data.trackEvents.byEnd.length, 2, "p.data.trackEvents.byEnd is initialized and has 2 entries");
+  
+  p.breaker({
+    start: 2, 
+    end: 30
+  });     
+  
+  equals( p.data.trackEvents.byStart.length, 3, "p.data.trackEvents.byStart is updated and has 3 entries");
+  equals( p.data.trackEvents.byEnd.length, 3, "p.data.trackEvents.byEnd is updated and has 3 entries");
+  
+  
+  p.removePlugin("breaker");
+  
+  
+  ok( !("breaker" in p), "breaker plugin is no longer available to instance" );
+  ok( !("breaker" in Popcorn.prototype), "breaker plugin is no longer available to Popcorn.prototype" );
+  
+  
+  equals( Popcorn.registry.length, 2, "Popcorn.registry.length is 2");
+  
+  equals( p.data.trackEvents.byStart.length, 2, "p.data.trackEvents.byStart is updated and has 2 entries");
+  equals( p.data.trackEvents.byEnd.length, 2, "p.data.trackEvents.byEnd is updated and has 2 entries");
   
 });
+
+
+
 
 test("Protected Names", function () {
   

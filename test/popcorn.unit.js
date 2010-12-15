@@ -1,4 +1,3 @@
-
 module("Popcorn");
 test("API", function () {
   
@@ -9,7 +8,7 @@ test("API", function () {
   
   function plus(){ if ( ++count == expects ) start(); }
 
-  stop();
+  stop(5000);
 
   
   try {
@@ -131,7 +130,7 @@ test("exec", function () {
     if ( ++count == expects ) start(); 
   }
   
-  stop(); 
+  stop(5000); 
   
 
 
@@ -175,7 +174,7 @@ test("Stored By Type", function () {
     } 
   }
 
-  stop();  
+  stop(5000);  
   
   
   p.listen("play", function () {
@@ -234,7 +233,7 @@ test("Simulated", function () {
     if ( ++count == expects ) start(); 
   }
   
-  stop();  
+  stop(5000);  
   
   
   Setup.events.forEach(function ( name ) {
@@ -275,7 +274,7 @@ test("Real", function () {
     if ( ++count == expects ) start(); 
   }
   
-  stop();  
+  stop(5000);  
   
   
   Setup.events.forEach(function ( name ) {
@@ -318,7 +317,7 @@ test("Custom", function () {
   
   function plus(){ if ( ++count == expects ) start(); }
 
-  stop();
+  stop(5000);
   
   var p = Popcorn("#video");
   
@@ -346,7 +345,7 @@ test("UI/Mouse", function () {
   
   function plus(){ if ( ++count == expects ) start(); }
 
-  stop();
+  stop(5000);
   
   var p = Popcorn("#video");
   
@@ -389,7 +388,7 @@ test("Update Timer", function () {
     }
   }
   
-  stop();  
+  stop(5000);  
 
   Popcorn.plugin("forwards", function () {
     return {
@@ -456,7 +455,7 @@ test("Plugin Factory", function () {
     }
   }
 
-  stop();
+  stop(5000);
 
   Popcorn.plugin("executor", function () {
     

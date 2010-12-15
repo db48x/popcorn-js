@@ -191,8 +191,6 @@
         if ( typeof value == "function" )
           dest[prop] = function () {
             var args = arguments, self = this;
-            console.log(prop);
-            console.log(self.toSource());
             self.whenLoaded(function () {
                               value.apply(self, args);
                             });
@@ -218,69 +216,57 @@
   };
 
   // A Few reusable utils, memoized onto Popcorn
-  Popcorn.extend( Popcorn, {
-    error: function( msg ) {
-      throw msg;
-    },
-    guid: function() {
-      return +new Date() + Math.floor(Math.random()*11);
-    }, 
-    sizeOf: function ( obj ) {
-      var size = 0;
+  Popcorn.error = function( msg ) {
+    throw msg;
+  };
 
-      for ( var prop in obj  ) {
-        size++;
-      }
+  Popcorn.guid = function() {
+    return +new Date() + Math.floor(Math.random()*11);
+  };
 
-      return size;
-    }, 
-    nop: function () {}
-  });    
+  Popcorn.sizeOf = function ( obj ) {
+    var size = 0;
+    for ( var prop in obj  ) {
+      size++;
+    }
+    return size;
+  };
+
+  Popcorn.nop = function () {};
   
   //  Simple Factory pattern to implement getters, setters and controllers 
   //  as methods of the returned Popcorn instance. The immediately invoked function 
   //  creates and returns an object of methods
-  Popcorn.extend(Popcorn.p, (function () {
       
       // todo: play, pause, mute should toggle
-      var methods = "load play pause currentTime playbackRate mute volume duration", 
-          ret = {};
-      
-      //  Build methods, store in object that is returned and passed to extend
-      Popcorn.forEach( methods.split(/\s+/g), function( name ) {
-        ret[ name ] = function( arg ) {
-          if ( typeof this.video[name] === "function" ) {
-            this.video[ name ]();
-            return this;
-          }
+  var wrapped_methods = "load play pause currentTime playbackRate mute volume duration";
 
-          if ( arg !== false && arg !== null && typeof arg !== "undefined" ) {
-            this.video[ name ] = arg;
-            return this;
-          }
+  Popcorn.forEach( wrapped_methods.split(/\s+/g), function( name ) {
+    Popcorn.p[ name ] = function( arg ) {
+      if ( typeof this.video[name] === "function" ) {
+        this.whenLoaded(this.video[ name ]);
+        return this;
+      }
 
-          return this.video[ name ];
-        };
-      });
-      
-      return ret;
+      if ( arg !== false && arg !== null && typeof arg !== "undefined" ) {
+        this.whenLoaded(function() { this.video[ name ] = arg; });
+        return this;
+      }
+
+      if ( !this.video )
+        this.error("getter called before the document is ready.");
+      return this.video[ name ];
+    };
+  });
   
-    })()
-  );
-  
-  Popcorn.extend(Popcorn.p, {
-    
     //  getting properties
-    roundTime: function () {
-      return -~this.video.currentTime;
-    },
-    
-    
+  Popcorn.p.roundTime= function () {
+    return -~this.video.currentTime;
+  };
+
+  Popcorn.extend(Popcorn.p, {
     exec: function ( time, fn ) {
-      
-      !fn && ( fn = Popcorn.nop );
-      
-      
+      if ( !fn ) return this;
       var timer = 0, 
           self  = this, 
           callback = function execCallback( event ) {
@@ -294,15 +280,11 @@
               timer++;
             }
           };
-      
-      
-      
+
       this.listen("timeupdate", callback);
-      
-      
-      
       return this;
     },
+
     removePlugin: function( name ) {
 
       var byStart = this.data.trackEvents.byStart, 
@@ -426,9 +408,9 @@
           this.data.events[type] = {};
           hasEvents = false;
         }
-        
+
         //  Register 
-        this.data.events[type][ fn.name || ( fn.toString() + Popcorn.guid() ) ] = fn;
+        this.data.events[type][ fn.name || ( Popcorn.guid() ) ] = fn;
         
         // only attach one event of any type          
         if ( !hasEvents && Popcorn.events.all.indexOf( type ) > -1 ) {
@@ -540,8 +522,7 @@
         //  for all of the native events
         Popcorn.forEach( setup, function ( callback, type ) {
           
-          if ( reserved.indexOf(type) === -1 ) {
-            
+          if ( reserved.indexOf(type) === -1 && typeof callback == "function" ) {
             this.listen( type, callback );
           }
           

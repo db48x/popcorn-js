@@ -243,13 +243,14 @@
 
   Popcorn.forEach( wrapped_methods.split(/\s+/g), function( name ) {
     Popcorn.p[ name ] = function( arg ) {
+      var self = this;
       if ( typeof this.video[name] === "function" ) {
-        this.whenLoaded(this.video[ name ]);
+        this.whenLoaded(function () { self.video[ name ](); });
         return this;
       }
 
       if ( arg !== false && arg !== null && typeof arg !== "undefined" ) {
-        this.whenLoaded(function() { this.video[ name ] = arg; });
+        this.whenLoaded(function() { self.video[ name ] = arg; });
         return this;
       }
 
@@ -270,7 +271,6 @@
       var timer = 0, 
           self  = this, 
           callback = function execCallback( event ) {
-            
             if ( this.currentTime() >= time && !timer ) {
               
               fn.call(self, event);

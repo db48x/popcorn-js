@@ -11,7 +11,10 @@
 
   //  ID string matching
   rIdExp  = /^(#([\w\-\_\.]+))$/, 
-
+   
+  // 
+  queue = [],
+   
   //  Declare a pseudo-private constructor
   //  This constructor returns the instance object.    
   Popcorn = function( entity ) {
@@ -22,19 +25,38 @@
   //  Declare a shortcut (Popcorn.p) to and a definition of 
   //  the new prototype for our Popcorn constructor 
   Popcorn.p = Popcorn.prototype = {
-
-    init: function( entity ) {
-
-      var elem, matches;
-
-      matches = rIdExp.exec( entity );
-      
-      if ( matches.length && matches[2]  ) {
+    findVideoElem: function( entity) {
+      if ( entity )
+        this.entity = entity;
+      if ( !this.entity )
+        return;
+      var elem, matches = rIdExp.exec( this.entity );
+      if ( matches && matches.length && matches[2] ) {
         elem = document.getElementById(matches[2]);
       }
-      
       this.video = elem ? elem : null;
-      
+    },
+
+    whenLoaded: function( fn ) {
+      if ( this.video )
+        fn();
+      else
+        queue.push(fn);
+    },
+   
+    hasLoaded: function() {
+      this.findVideoElem();
+      if ( this.video )
+        for each ( fn in queue )
+        {
+          fn();
+        }
+      else
+        alert("no video element found. ("+ this.entity +")");
+    },
+   
+    init: function( entity ) {
+      this.findVideoElem( entity );
       this.data = {
         events: {},
         trackEvents: {
@@ -128,8 +150,9 @@
         }
       };
 
-      isReady( this );
-
+      this.whenLoaded(function() { isReady(self); });
+      $(document).ready(function() { self.hasLoaded(); });
+      
       return this;
     }
   };
@@ -164,7 +187,19 @@
 
     Popcorn.forEach( src, function( copy ) {
       for ( var prop in copy ) {
-        dest[prop] = copy[prop];
+        var value = copy[prop];
+        if ( typeof value == "function" )
+          dest[prop] = function () {
+            var args = arguments, self = this;
+            console.log(prop);
+            console.log(self.toSource());
+            self.whenLoaded(function () {
+                              value.apply(self, args);
+                            });
+            return self;
+          };
+        else
+          dest[prop] = value;
       }
     });
     return dest;      
@@ -213,23 +248,17 @@
       
       //  Build methods, store in object that is returned and passed to extend
       Popcorn.forEach( methods.split(/\s+/g), function( name ) {
-        
         ret[ name ] = function( arg ) {
-          
           if ( typeof this.video[name] === "function" ) {
             this.video[ name ]();
-            
             return this;
           }
-          
-          
+
           if ( arg !== false && arg !== null && typeof arg !== "undefined" ) {
-            
             this.video[ name ] = arg;
-            
             return this;
           }
-          
+
           return this.video[ name ];
         };
       });
@@ -540,6 +569,7 @@
     
     //  Assign new named definition     
     plugin[ name ] = pluginFn;
+    //Popcorn.p[ name ] = pluginFn;
     
     //  Extend Popcorn.p with new named definition
     Popcorn.extend( Popcorn.p, plugin );

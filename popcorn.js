@@ -424,7 +424,7 @@
 
             });
             
-            //fn.call( self, event );
+            fn.call( self, event );
           
           }, false);          
         }

@@ -1,3 +1,4 @@
+var TIMEOUT = 5000;
 
 module("Popcorn");
 test("API", function () {
@@ -9,7 +10,7 @@ test("API", function () {
   
   function plus(){ if ( ++count == expects ) start(); }
 
-  stop();
+  stop(TIMEOUT);
 
   
   try {
@@ -29,7 +30,7 @@ test("API", function () {
   
   try {  
     
-    equals( Setup.getGlobalSize(), Setup.globalSize + 1 , "Popcorn API creates only 1 global reference");
+    equals( Setup.getGlobalSize(), Setup.globalSize + 2 , "Popcorn API creates only 1 global reference");
     plus();
     
   } catch (e) {};
@@ -131,7 +132,7 @@ test("exec", function () {
     if ( ++count == expects ) start(); 
   }
   
-  stop(); 
+  stop(TIMEOUT); 
   
 
 
@@ -175,7 +176,7 @@ test("Stored By Type", function () {
     } 
   }
 
-  stop();  
+  stop(TIMEOUT);  
   
   
   p.listen("play", function () {
@@ -234,7 +235,7 @@ test("Simulated", function () {
     if ( ++count == expects ) start(); 
   }
   
-  stop();  
+  stop(TIMEOUT);  
   
   
   Setup.events.forEach(function ( name ) {
@@ -275,7 +276,7 @@ test("Real", function () {
     if ( ++count == expects ) start(); 
   }
   
-  stop();  
+  stop(TIMEOUT);  
   
   
   Setup.events.forEach(function ( name ) {
@@ -318,7 +319,7 @@ test("Custom", function () {
   
   function plus(){ if ( ++count == expects ) start(); }
 
-  stop();
+  stop(TIMEOUT);
   
   var p = Popcorn("#video");
   
@@ -346,7 +347,7 @@ test("UI/Mouse", function () {
   
   function plus(){ if ( ++count == expects ) start(); }
 
-  stop();
+  stop(TIMEOUT);
   
   var p = Popcorn("#video");
   
@@ -389,7 +390,7 @@ test("Update Timer", function () {
     }
   }
   
-  stop();  
+  stop(TIMEOUT);  
 
   Popcorn.plugin("forwards", function () {
     return {
@@ -456,7 +457,7 @@ test("Plugin Factory", function () {
     }
   }
 
-  stop();
+  stop(TIMEOUT);
 
   Popcorn.plugin("executor", function () {
     
@@ -664,6 +665,19 @@ test("Protected Names", function () {
 });
 
 
+test("Last Check", function () {
+  
+  //   ALWAYS RUN LAST
+  
+  expect(1)
+  try {  
+    
+    equals( Setup.getGlobalSize(), Setup.globalSize + 2 , "Popcorn API did not leak");
+    plus();
+    
+  } catch (e) {};
+  
+});
 
 /*
 

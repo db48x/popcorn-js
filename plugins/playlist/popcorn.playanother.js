@@ -1,3 +1,15 @@
+/* Playanother plugin
+ * 
+ *   Synchronized playback of another audio or video track.
+ * 
+ * Options
+ *   type:    Either 'audio' or 'video'
+ *   src:     a URL, either relative or absolute
+ *   target:  the ID of an element within which the audio or video should be shown
+ *   width:   the width of the video element
+ *   height:  the height of the video element
+ */
+
 (function (Popcorn)
 {
   Popcorn.plugin("playanother",

@@ -1,3 +1,12 @@
+/* Playlist plugin
+ * 
+ *   Play a sequence of tracks (audio or video) for as long as the primary
+ * video is playing.
+ * 
+ * Options:
+ *   target:  ID of an element that contains one or more <audio> or <video> tags
+ */
+
 (function (Popcorn)
 {
   Popcorn.plugin("playlist",

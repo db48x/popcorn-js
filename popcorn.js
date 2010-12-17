@@ -189,13 +189,18 @@
       for ( var prop in copy ) {
         var value = copy[prop];
         if ( typeof value == "function" )
-          dest[prop] = function () {
-            var args = arguments, self = this;
-            self.whenLoaded(function () {
-                              value.apply(self, args);
-                            });
-            return self;
-          };
+        {
+          (function(fn)
+          {
+            dest[prop] = function () {
+              var args = arguments; self = this;
+              this.whenLoaded(function () {
+                                fn.apply(self, args);
+                              });
+              return self;
+            };
+          })(value);
+        }          
         else
           dest[prop] = value;
       }
@@ -286,7 +291,6 @@
     },
 
     removePlugin: function( name ) {
-
       var byStart = this.data.trackEvents.byStart, 
           byEnd = this.data.trackEvents.byEnd;        
   
@@ -401,7 +405,6 @@
         return this;
       }, 
       listen: function ( type, fn ) {
-        
         var self = this, hasEvents = true, ns = '';
         
         if ( !this.data.events[type] ) {
@@ -414,18 +417,12 @@
         
         // only attach one event of any type          
         if ( !hasEvents && Popcorn.events.all.indexOf( type ) > -1 ) {
-
           this.video.addEventListener( type, function( event ) {
-            
             Popcorn.forEach( self.data.events[type], function ( obj, key ) {
               if ( typeof obj === "function" ) {
                 obj.call(self, event);
               }
-
             });
-            
-            fn.call( self, event );
-          
           }, false);          
         }
         return this;

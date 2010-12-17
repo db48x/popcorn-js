@@ -151,7 +151,7 @@
       };
 
       this.whenLoaded(function() { isReady(self); });
-      $(document).ready(function() { self.hasLoaded(); });
+      document.addEventListener("DOMContentLoaded", function() { self.hasLoaded(); }, true);
       
       return this;
     }

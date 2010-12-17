@@ -322,7 +322,7 @@
     
   Popcorn.Events.Natives = Popcorn.Events.UIEvents + " " + 
                             Popcorn.Events.MouseEvents + " " +
-                              Popcorn.Events.Events,
+                              Popcorn.Events.Events;
   
   Popcorn.events  = {
   
@@ -500,7 +500,7 @@
         //  the events commence
         
         if ( "_setup" in setup && typeof setup._setup === "function" ) {
-          setup._setup.call(self, options);
+          setup._setup.call(this, options);
         }
         
 
@@ -549,6 +549,62 @@
     
     
     return plugin;
+  };
+  
+  
+  var setup = {
+    url: '',
+    data: '',
+    dataType: '',
+    success: Popcorn.nop,
+    type: 'GET',
+    async: true, 
+    xhr: function()  {
+      return new XMLHttpRequest();
+    }
+  };   
+  
+  Popcorn.xhr = function ( options ) {
+
+    var settings = Popcorn.extend( {}, setup, options );
+
+    settings.ajax  = settings.xhr();
+    
+    if ( settings.ajax ) {
+
+      settings.ajax.open( settings.type, settings.url, settings.async ); 
+      settings.ajax.send( null ); 
+
+      return Popcorn.xhr.httpData( settings );
+    }       
+  };
+
+  
+  Popcorn.xhr.httpData = function ( settings ) {
+  
+    var data, json = null,  
+        
+    onreadystatechange = settings.ajax.onreadystatechange = function() {
+
+      if ( settings.ajax.readyState === 4 ) { 
+        
+        try {
+          json = JSON.parse(settings.ajax.responseText);
+        } catch(e) {
+          //suppress
+        };
+
+        data = {
+          xml: settings.ajax.responseXML, 
+          text: settings.ajax.responseText, 
+          json: json
+        };
+
+        settings.success.call( settings.ajax, data );
+        
+      } 
+    }; 
+    return data;  
   };
   
 

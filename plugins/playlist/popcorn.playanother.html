@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Popcorn PlayAnother Plug-in Demo</title>
+  <script src="../../test/jquery.js"></script>
+  <script src="../../popcorn.js"></script>
+  <script src="popcorn.playanother.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      var p = Popcorn('#video')
+      .volume(0)
+      .playanother({
+        type: 'audio',
+        start: 10, // seconds
+        end: 20, // seconds
+        src: '../../test/trailer.ogv',
+        width: 250,
+        target: 'track1'
+      }).play();
+    }, false);
+  </script>
+</head>
+<body>
+  <h1 id="qunit-header">Popcorn PlayAnother Plug-in Demo</h1>
+  <p></p>
+  <p></p>
+  <div>
+    <video id="video" controls preload="auto" width="250px" poster="../../test/poster.png">
+      <source id="mp4" src="../../test/trailer.mp4" type='video/mp4; codecs="avc1, mp4a"'>
+      <source id="ogv" src="../../test/trailer.ogv" type='video/ogg; codecs="theora, vorbis"'>
+      <p>Your user agent does not support the HTML5 Video element. Time to upgrade!</p>
+    </video>
+  </div>
+  <div id="track1">
+  </div>
+</body>
+</html>

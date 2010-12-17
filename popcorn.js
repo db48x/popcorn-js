@@ -11,7 +11,10 @@
 
   //  ID string matching
   rIdExp  = /^(#([\w\-\_\.]+))$/, 
-
+   
+  // 
+  queue = [],
+   
   //  Declare a pseudo-private constructor
   //  This constructor returns the instance object.    
   Popcorn = function( entity ) {
@@ -22,19 +25,38 @@
   //  Declare a shortcut (Popcorn.p) to and a definition of 
   //  the new prototype for our Popcorn constructor 
   Popcorn.p = Popcorn.prototype = {
-
-    init: function( entity ) {
-
-      var elem, matches;
-
-      matches = rIdExp.exec( entity );
-      
-      if ( matches.length && matches[2]  ) {
+    findVideoElem: function( entity) {
+      if ( entity )
+        this.entity = entity;
+      if ( !this.entity )
+        return;
+      var elem, matches = rIdExp.exec( this.entity );
+      if ( matches && matches.length && matches[2] ) {
         elem = document.getElementById(matches[2]);
       }
-      
       this.video = elem ? elem : null;
-      
+    },
+
+    whenLoaded: function( fn ) {
+      if ( this.video )
+        fn();
+      else
+        queue.push(fn);
+    },
+   
+    hasLoaded: function() {
+      this.findVideoElem();
+      if ( this.video )
+        for each ( fn in queue )
+        {
+          fn();
+        }
+      else
+        alert("no video element found. ("+ this.entity +")");
+    },
+   
+    init: function( entity ) {
+      this.findVideoElem( entity );
       this.data = {
         events: {},
         trackEvents: {
@@ -128,8 +150,9 @@
         }
       };
 
-      isReady( this );
-
+      this.whenLoaded(function() { isReady(self); });
+      document.addEventListener("DOMContentLoaded", function() { self.hasLoaded(); }, true);
+      
       return this;
     }
   };
@@ -164,7 +187,22 @@
 
     Popcorn.forEach( src, function( copy ) {
       for ( var prop in copy ) {
-        dest[prop] = copy[prop];
+        var value = copy[prop];
+        if ( typeof value == "function" )
+        {
+          (function(fn)
+          {
+            dest[prop] = function () {
+              var args = arguments; self = this;
+              this.whenLoaded(function () {
+                                fn.apply(self, args);
+                              });
+              return self;
+            };
+          })(value);
+        }          
+        else
+          dest[prop] = value;
       }
     });
     return dest;      
@@ -183,79 +221,61 @@
   };
 
   // A Few reusable utils, memoized onto Popcorn
-  Popcorn.extend( Popcorn, {
-    error: function( msg ) {
-      throw msg;
-    },
-    guid: function() {
-      return +new Date() + Math.floor(Math.random()*11);
-    }, 
-    sizeOf: function ( obj ) {
-      var size = 0;
+  Popcorn.error = function( msg ) {
+    throw msg;
+  };
 
-      for ( var prop in obj  ) {
-        size++;
-      }
+  Popcorn.guid = function() {
+    return +new Date() + Math.floor(Math.random()*11);
+  };
 
-      return size;
-    }, 
-    nop: function () {}
-  });    
+  Popcorn.sizeOf = function ( obj ) {
+    var size = 0;
+    for ( var prop in obj  ) {
+      size++;
+    }
+    return size;
+  };
+
+  Popcorn.nop = function () {};
   
   //  Simple Factory pattern to implement getters, setters and controllers 
   //  as methods of the returned Popcorn instance. The immediately invoked function 
   //  creates and returns an object of methods
-  Popcorn.extend(Popcorn.p, (function () {
       
       // todo: play, pause, mute should toggle
-      var methods = "load play pause currentTime playbackRate mute volume duration", 
-          ret = {};
-      
-      //  Build methods, store in object that is returned and passed to extend
-      Popcorn.forEach( methods.split(/\s+/g), function( name ) {
-        
-        ret[ name ] = function( arg ) {
-          
-          if ( typeof this.video[name] === "function" ) {
-            this.video[ name ]();
-            
-            return this;
-          }
-          
-          
-          if ( arg !== false && arg !== null && typeof arg !== "undefined" ) {
-            
-            this.video[ name ] = arg;
-            
-            return this;
-          }
-          
-          return this.video[ name ];
-        };
-      });
-      
-      return ret;
+  var wrapped_methods = "load play pause currentTime playbackRate mute volume duration";
+
+  Popcorn.forEach( wrapped_methods.split(/\s+/g), function( name ) {
+    Popcorn.p[ name ] = function( arg ) {
+      var self = this;
+      if ( typeof this.video[name] === "function" ) {
+        this.whenLoaded(function () { self.video[ name ](); });
+        return this;
+      }
+
+      if ( arg !== false && arg !== null && typeof arg !== "undefined" ) {
+        this.whenLoaded(function() { self.video[ name ] = arg; });
+        return this;
+      }
+
+      if ( !this.video )
+        this.error("getter called before the document is ready.");
+      return this.video[ name ];
+    };
+  });
   
-    })()
-  );
-  
-  Popcorn.extend(Popcorn.p, {
-    
     //  getting properties
-    roundTime: function () {
-      return -~this.video.currentTime;
-    },
-    
-    
+  Popcorn.p.roundTime= function () {
+    return -~this.video.currentTime;
+  };
+
+  Popcorn.extend(Popcorn.p, {
     exec: function ( time, fn ) {
-      
-      !fn && ( fn = Popcorn.nop );
-      
-      
+      if ( !fn ) return this;
       var timer = 0, 
           self  = this, 
           callback = function execCallback( event ) {
-            
             if ( this.currentTime() >= time && !timer ) {
               
               fn.call(self, event);
@@ -265,17 +285,12 @@
               timer++;
             }
           };
-      
-      
-      
+
       this.listen("timeupdate", callback);
-      
-      
-      
       return this;
     },
-    removePlugin: function( name ) {
 
+    removePlugin: function( name ) {
       var byStart = this.data.trackEvents.byStart, 
           byEnd = this.data.trackEvents.byEnd;        
   
@@ -390,31 +405,24 @@
         return this;
       }, 
       listen: function ( type, fn ) {
-        
         var self = this, hasEvents = true, ns = '';
         
         if ( !this.data.events[type] ) {
           this.data.events[type] = {};
           hasEvents = false;
         }
-        
+
         //  Register 
-        this.data.events[type][ fn.name || ( fn.toString() + Popcorn.guid() ) ] = fn;
+        this.data.events[type][ fn.name || ( Popcorn.guid() ) ] = fn;
         
         // only attach one event of any type          
         if ( !hasEvents && Popcorn.events.all.indexOf( type ) > -1 ) {
-
           this.video.addEventListener( type, function( event ) {
-            
             Popcorn.forEach( self.data.events[type], function ( obj, key ) {
               if ( typeof obj === "function" ) {
                 obj.call(self, event);
               }
-
             });
-            
-            //fn.call( self, event );
-          
           }, false);          
         }
         return this;
@@ -511,8 +519,7 @@
         //  for all of the native events
         Popcorn.forEach( setup, function ( callback, type ) {
           
-          if ( reserved.indexOf(type) === -1 ) {
-            
+          if ( reserved.indexOf(type) === -1 && typeof callback == "function" ) {
             this.listen( type, callback );
           }
           
@@ -540,6 +547,7 @@
     
     //  Assign new named definition     
     plugin[ name ] = pluginFn;
+    //Popcorn.p[ name ] = pluginFn;
     
     //  Extend Popcorn.p with new named definition
     Popcorn.extend( Popcorn.p, plugin );

@@ -16,38 +16,37 @@
   {
     _setup: function(options)
     {
-      var target = $(options.type == "audio" ? "<audio/>" : "<video/>",
-                     { src: options.src,
-                       width: options.width,
-                       height: options.height,
-                       id: this.id,
-                       preload: 'auto'
-                     });
+      var target = document.createElement(options.type == "audio" ? "audio" : "video");
+      target.setAttribute("src", options.src);
+      target.setAttribute("width", options.width);
+      target.setAttribute("height", options.height);
+      target.setAttribute("id", this.id);
+      target.setAttribute("preload", "auto");
+      document.getElementById(options.target).appendChild(target);
 
       options._target = target;
       options._isIn = false;
-      target.hide();
-      $("#"+ options.target).append(target);
+      target.style.visibility = "hidden";
 
-      var vid = $(this.video);
-      vid.bind("play", function() { if (options._isIn) target.get(0).play(); })
-         .bind("pause", function() { target.get(0).pause(); })
-         .bind("volumechange", function(event)
-      {
-        target.get(0).volume = vid.volume;
-        target.get(0).muted = vid.muted;
-      });
+      var video = this.video;
+      video.addEventListener("play", function() { if (options._isIn) target.play(); }, false);
+      video.addEventListener("pause", function() { target.pause(); }, false);
+      video.addEventListener("volumechange", function(event)
+                             {
+                               target.volume = video.volume;
+                               target.muted = video.muted;
+                             }, false);
     },
     start: function(event, options)
     {
-      options._target.show();
-      options._target.get(0).play();
+      options._target.style.visibility = "visible";
+      options._target.play();
       options._isIn = true;
     },
     end: function(event, options)
     {
-      options._target.get(0).pause();
-      options._target.hide();
+      options._target.pause();
+      options._target.style.visibility = "hidden";
       options._isIn = false;
     }
   });

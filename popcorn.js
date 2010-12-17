@@ -243,17 +243,20 @@
   //  as methods of the returned Popcorn instance. The immediately invoked function 
   //  creates and returns an object of methods
       
-      // todo: play, pause, mute should toggle
-  var wrapped_methods = "load play pause currentTime playbackRate mute volume duration";
+  // todo: play, pause, mute should toggle
+   var wrapped_methods = ["load", "play", "pause"],
+       wrapped_attributes = ["currentTime", "playbackRate", "mute", "volume", "duration"];
 
-  Popcorn.forEach( wrapped_methods.split(/\s+/g), function( name ) {
+  Popcorn.forEach( wrapped_methods, function( name ) {
     Popcorn.p[ name ] = function( arg ) {
       var self = this;
-      if ( typeof this.video[name] === "function" ) {
-        this.whenLoaded(function () { self.video[ name ](); });
+        this.whenLoaded(function () { self.video[ name ](arg); });
         return this;
-      }
+    };
+  });
 
+  Popcorn.forEach( wrapped_attributes, function( name ) {
+    Popcorn.p[ name ] = function( arg ) {
       if ( arg !== false && arg !== null && typeof arg !== "undefined" ) {
         this.whenLoaded(function() { self.video[ name ] = arg; });
         return this;

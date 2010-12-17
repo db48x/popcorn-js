@@ -1,3 +1,4 @@
+var TIMEOUT = 10000;
 
 module("Popcorn");
 test("API", function () {
@@ -9,8 +10,7 @@ test("API", function () {
   
   function plus(){ if ( ++count == expects ) start(); }
 
-  stop();
-
+  stop(TIMEOUT);
   
   try {
     
@@ -29,7 +29,7 @@ test("API", function () {
   
   try {  
     
-    equals( Setup.getGlobalSize(), Setup.globalSize + 1 , "Popcorn API creates only 1 global reference");
+    equals( Setup.getGlobalSize(), Setup.globalSize + 2 , "Popcorn API creates only 1 global reference");
     plus();
     
   } catch (e) {};
@@ -131,7 +131,7 @@ test("exec", function () {
     if ( ++count == expects ) start(); 
   }
   
-  stop(); 
+  stop(TIMEOUT); 
   
 
 
@@ -175,7 +175,7 @@ test("Stored By Type", function () {
     } 
   }
 
-  stop();  
+  stop(TIMEOUT);  
   
   
   p.listen("play", function () {
@@ -234,8 +234,7 @@ test("Simulated", function () {
     if ( ++count == expects ) start(); 
   }
   
-  stop();  
-  
+  stop(TIMEOUT);  
   
   Setup.events.forEach(function ( name ) {
     p.listen( name, function (event) {
@@ -275,8 +274,7 @@ test("Real", function () {
     if ( ++count == expects ) start(); 
   }
   
-  stop();  
-  
+  stop(TIMEOUT);  
   
   [ "play", "pause", "volumechange", "seeking", "seeked" ].forEach(function ( name ) {
     
@@ -316,7 +314,7 @@ test("Custom", function () {
   
   function plus(){ if ( ++count == expects ) start(); }
 
-  stop();
+  stop(TIMEOUT);
   
   var p = Popcorn("#video");
   
@@ -344,7 +342,7 @@ test("UI/Mouse", function () {
   
   function plus(){ if ( ++count == expects ) start(); }
 
-  stop();
+  stop(TIMEOUT);
   
   var p = Popcorn("#video");
   
@@ -387,7 +385,7 @@ test("Update Timer", function () {
     }
   }
   
-  stop();  
+  stop(TIMEOUT);  
 
   Popcorn.plugin("forwards", function () {
     return {
@@ -454,7 +452,7 @@ test("Plugin Factory", function () {
     }
   }
 
-  stop();
+  stop(TIMEOUT);
 
   Popcorn.plugin("executor", function () {
     
@@ -686,7 +684,7 @@ test("Text Response", function () {
   
   expect(expects);
   
-  stop();
+  stop( 10000 );
 
   Popcorn.xhr({
     url: 'data/test.txt', 
@@ -715,7 +713,7 @@ test("JSON Response", function () {
   
   expect(expects);
   
-  stop();
+  stop( 10000 );
 
 
   var testObj = { "data": {"lang": "en", "length": 25} };  
@@ -749,7 +747,7 @@ test("XML Response", function () {
   
   expect(expects);
   
-  stop();
+  stop( 10000 );
 
 
   Popcorn.xhr({
@@ -781,7 +779,7 @@ test("Last Check", function () {
   expect(1)
   try {  
     
-    equals( Setup.getGlobalSize(), Setup.globalSize + 1 , "Popcorn API did not leak");
+    equals( Setup.getGlobalSize(), Setup.globalSize + 2 , "Popcorn API did not leak");
     plus();
     
   } catch (e) {};
@@ -812,7 +810,7 @@ test("Events Extended", function () {
     if ( ++count == expects ) start(); 
   }
   
-  stop();  
+  stop( 10000 );  
   
   
   Popcorn.plugin("extendedEvents", (function () {

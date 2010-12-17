@@ -244,8 +244,8 @@
   //  creates and returns an object of methods
       
   // todo: play, pause, mute should toggle
-   var wrapped_methods = ["load", "play", "pause"],
-       wrapped_attributes = ["currentTime", "playbackRate", "mute", "volume", "duration"];
+   var wrapped_methods = ["load", "play", "pause", "mute"],
+       wrapped_attributes = ["currentTime", "playbackRate", "volume", "duration"];
 
   Popcorn.forEach( wrapped_methods, function( name ) {
     Popcorn.p[ name ] = function( arg ) {

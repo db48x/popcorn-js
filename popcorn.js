@@ -32,7 +32,7 @@
         return;
       var elem, matches = rIdExp.exec( this.entity );
       if ( matches && matches.length && matches[2] ) {
-        elem = document.getElementById(matches[2]);
+        elem = document.getElementById( matches[2] );
       }
       this.video = elem ? elem : null;
     },
@@ -52,7 +52,7 @@
           fn();
         }
       else
-        alert("no video element found. ("+ this.entity +")");
+        alert( "no video element found. ("+ this.entity +")" );
     },
    
     init: function( entity ) {
@@ -183,26 +183,26 @@
   };    
   
   Popcorn.extend = function( obj ) {
-    var dest = obj, src = slice.call(arguments, 1);
+    var dest = obj, src = slice.call( arguments, 1 );
 
     Popcorn.forEach( src, function( copy ) {
       for ( var prop in copy ) {
-        var value = copy[prop];
-        if ( typeof value == "function" )
-        {
-          (function(fn)
-          {
-            dest[prop] = function () {
+        var value = copy[ prop ];
+        if ( typeof value == "function" ) {
+          (function(fn) {
+            dest[ prop ] = function () {
               var args = arguments; self = this;
               this.whenLoaded(function () {
-                                fn.apply(self, args);
-                              });
+                fn.apply(self, args);
+              });
               return self;
             };
           })(value);
         }          
         else
-          dest[prop] = value;
+        {
+          dest[ prop ] = value;         
+        }
       }
     });
     return dest;      
@@ -250,7 +250,9 @@
   Popcorn.forEach( wrapped_methods, function( name ) {
     Popcorn.p[ name ] = function( arg ) {
       var self = this;
-        this.whenLoaded(function () { self.video[ name ](arg); });
+        this.whenLoaded(function () {
+          self.video[ name ](arg);
+        });
         return this;
     };
   });
@@ -258,7 +260,9 @@
   Popcorn.forEach( wrapped_attributes, function( name ) {
     Popcorn.p[ name ] = function( arg ) {
       if ( arg !== false && arg !== null && typeof arg !== "undefined" ) {
-        this.whenLoaded(function() { self.video[ name ] = arg; });
+        this.whenLoaded(function() {
+          self.video[ name ] = arg;
+        });
         return this;
       }
 

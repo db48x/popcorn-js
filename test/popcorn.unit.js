@@ -9,7 +9,7 @@ test("API", function () {
   
   function plus(){ if ( ++count == expects ) start(); }
 
-  stop();
+  stop( 10000 );
 
   
   try {
@@ -52,6 +52,45 @@ test("Utility", function () {
   
   
   
+  
+});
+
+
+test("guid", function () {
+  
+  expect(6);
+  
+  var count = 3, 
+      guids = [], 
+      temp;
+  
+  for ( var i = 0; i < count; i++ ) {
+    
+    temp = Popcorn.guid();
+    
+    if ( i > 0 ) {
+      notEqual( temp, guids[ guids.length - 1 ], "Current guid does not equal last guid" );
+    } else {
+      ok( temp, "Popcorn.guid() returns value" );
+    }
+    
+    guids.push(temp);
+  }
+
+  guids = [];
+  
+  for ( var i = 0; i < count; i++ ) {
+    
+    temp = Popcorn.guid( "pre" );
+    
+    if ( i > 0 ) {
+      notEqual( temp, guids[ guids.length - 1 ], "Current guid does not equal last guid" );
+    } else {
+      ok( temp, "Popcorn.guid( 'pre' ) returns value" );
+    }
+    
+    guids.push(temp);
+  }  
   
 });
 
@@ -131,7 +170,7 @@ test("exec", function () {
     if ( ++count == expects ) start(); 
   }
   
-  stop(); 
+  stop( 10000 ); 
   
 
 
@@ -175,7 +214,7 @@ test("Stored By Type", function () {
     } 
   }
 
-  stop();  
+  stop( 10000 );  
   
   
   p.listen("play", function () {
@@ -234,7 +273,7 @@ test("Simulated", function () {
     if ( ++count == expects ) start(); 
   }
   
-  stop();  
+  stop( 10000 );  
   
   
   Setup.events.forEach(function ( name ) {
@@ -275,7 +314,7 @@ test("Real", function () {
     if ( ++count == expects ) start(); 
   }
   
-  stop();  
+  stop( 10000 );  
   
   
   [ "play", "pause", "volumechange", "seeking", "seeked" ].forEach(function ( name ) {
@@ -316,7 +355,7 @@ test("Custom", function () {
   
   function plus(){ if ( ++count == expects ) start(); }
 
-  stop();
+  stop( 10000 );
   
   var p = Popcorn("#video");
   
@@ -344,7 +383,7 @@ test("UI/Mouse", function () {
   
   function plus(){ if ( ++count == expects ) start(); }
 
-  stop();
+  stop( 10000 );
   
   var p = Popcorn("#video");
   
@@ -387,7 +426,7 @@ test("Update Timer", function () {
     }
   }
   
-  stop();  
+  stop( 10000 );  
 
   Popcorn.plugin("forwards", function () {
     return {
@@ -454,7 +493,7 @@ test("Plugin Factory", function () {
     }
   }
 
-  stop();
+  stop( 10000 );
 
   Popcorn.plugin("executor", function () {
     
@@ -660,7 +699,208 @@ test("Protected Names", function () {
     };
   });
 });
-Popcorn.xhr.httpData
+
+module("Popcorn TrackEvents");
+test("Functions", function () {
+
+  //  TODO: break this into sep. units per function
+  expect(19);
+  
+  var popped = Popcorn("#video"), ffTrackId, rwTrackId, rw2TrackId, rw3TrackId, historyRef, trackEvents;
+  
+
+  Popcorn.plugin("ff", function () {
+    return {
+      start: function () {},
+      end: function () {}
+    };
+  });
+
+  popped.ff({
+    start: 3, 
+    end: 4
+  });
+  
+  
+  ffTrackId = popped.getLastTrackEventId();
+  
+  
+
+  Popcorn.plugin("rw", function () {
+    return {
+      start: function () {},
+      end: function () {}
+    };
+  });
+
+  popped.rw({
+    start: 1, 
+    end: 2
+  });  
+  
+  
+  rwTrackId = popped.getLastTrackEventId();
+  
+  historyRef = popped.data.history;
+  
+  
+  equals( historyRef.length, 2, "2 TrackEvents in history index");
+  
+  equals( popped.data.trackEvents.byStart.length, 4, "4 TrackEvents in popped.data.trackEvents.byStart ");
+  equals( popped.data.trackEvents.byEnd.length, 4, "4 TrackEvents in popped.data.trackEvents.byEnd ");
+  
+  
+  trackEvents = popped.getTrackEvents();
+  
+  equals( trackEvents.length, 2, "2 user created trackEvents returned by popped.getTrackEvents()" )
+  
+
+  ok( ffTrackId !== rwTrackId, "Track Events have different ids" );
+  
+  popped.removeTrackEvent( rwTrackId );
+  
+  equals( popped.data.history.length, 1, "1 TrackEvent in history index - after popped.removeTrackEvent( rwTrackId ); ");
+  equals( popped.data.trackEvents.byStart.length, 3, "3 TrackEvents in popped.data.trackEvents.byStart ");
+  equals( popped.data.trackEvents.byEnd.length, 3, "3 TrackEvents in popped.data.trackEvents.byEnd ");  
+  
+  trackEvents = popped.getTrackEvents();
+  
+  equals( trackEvents.length, 1, "1 user created trackEvents returned by popped.getTrackEvents()" )
+
+  popped.rw({
+    start: 1, 
+    end: 2
+  });  
+  
+  
+  rw2TrackId = popped.getLastTrackEventId();
+  
+  equals( popped.data.history.length, 2, "2 TrackEvents in history index - after new track added ");
+  
+  
+  ok( rw2TrackId !== rwTrackId, "rw2TrackId !== rwTrackId" );
+  
+  equals( popped.data.trackEvents.byStart.length, 4, "4 TrackEvents in popped.data.trackEvents.byStart  - after new track added");
+  equals( popped.data.trackEvents.byEnd.length, 4, "4 TrackEvents in popped.data.trackEvents.byEnd  - after new track added");  
+  
+  
+  trackEvents = popped.getTrackEvents();
+  
+  equals( trackEvents.length, 2, "2 user created trackEvents returned by popped.getTrackEvents()" )
+  
+  
+  popped.rw({
+    id: "my-track-id", 
+    start: 3, 
+    end: 10
+  });  
+  
+  rw3TrackId = popped.getLastTrackEventId();
+  
+  equals( popped.data.history.length, 3, "3 TrackEvents in history index - after new track added ");
+  equals( popped.data.trackEvents.byStart.length, 5, "5 TrackEvents in popped.data.trackEvents.byStart  - after new track added");
+  equals( popped.data.trackEvents.byEnd.length, 5, "5 TrackEvents in popped.data.trackEvents.byEnd  - after new track added");  
+  
+  equals( rw3TrackId, "my-track-id", "TrackEvent has user defined id");
+  
+  trackEvents = popped.getTrackEvents();
+  
+  equals( trackEvents.length, 3, "3 user created trackEvents returned by popped.getTrackEvents()" )  
+  
+
+  
+  
+});
+
+test("Index Integrity", function () {
+  
+  
+  
+  var trackLen, hasrun = false, lastrun = false;
+  
+  
+  Popcorn.plugin("ff", function () {
+    return {
+      start: function () {
+        var div = document.createElement('div');
+        div.id = "index-test";
+        div.innerHTML = "foo";
+        
+        document.body.appendChild(div);
+      },
+      end: function () {
+        document.getElementById('index-test').parentNode.removeChild(document.getElementById('index-test'));
+      }
+    };
+  });
+  
+  
+  var p = Popcorn("#video");
+  
+  p.ff({
+    id: "removeable-track-event",
+    start: 40, 
+    end: 41
+  });
+  
+  p.currentTime(40).pause();  
+  
+  stop( 10000 );
+  
+  equals(p.data.trackEvents.endIndex, 0, "p.data.trackEvents.endIndex is 0");
+  equals(p.data.trackEvents.startIndex, 0, "p.data.trackEvents.startIndex is 0");
+  equals(p.data.trackEvents.byStart.length, 3, "p.data.trackEvents.byStart.length is 3 - before play" );
+  
+  
+  
+  
+  p.listen("timeupdate", function () {
+  
+    if ( p.roundTime() > 40 && p.roundTime() < 42 && !hasrun ) {
+    }
+    
+    if ( p.roundTime() > 40 && p.roundTime() < 42 && hasrun && !lastrun ) {
+      
+      lastrun = true;
+      
+      equals( document.getElementById('index-test'), null, "document.getElementById('index-test') is null on second run - after removeTrackEvent" );
+      
+      start();
+    }
+    
+    if ( p.roundTime() >= 42 && !hasrun ) {
+      
+      hasrun  = true;
+      p.pause();
+      
+      equals(p.data.trackEvents.byStart.length, 3, "p.data.trackEvents.byStart.length is 3 - after play, before removeTrackEvent" );
+      equals(p.data.trackEvents.startIndex, 2, "p.data.trackEvents.startIndex is 2 - after play, before removeTrackEvent");      
+      equals(p.data.trackEvents.endIndex, 2, "p.data.trackEvents.endIndex is 2 - after play, before removeTrackEvent");
+      
+
+      
+      p.removeTrackEvent("removeable-track-event");
+      
+      equals(p.data.trackEvents.byStart.length, 2, "p.data.trackEvents.byStart.length is 2 - after removeTrackEvent" );
+      equals(p.data.trackEvents.startIndex, 1, "p.data.trackEvents.startIndex is 1 - after removeTrackEvent");
+      equals(p.data.trackEvents.endIndex, 1, "p.data.trackEvents.endIndex is 1 - after removeTrackEvent");
+      
+      
+      
+      p.currentTime(40).play();
+      
+      
+      
+    }
+  });
+  
+  p.play();
+
+  
+});
+
+
+
 
 module("Popcorn XHR");
 test("Basic", function () {
@@ -686,7 +926,7 @@ test("Text Response", function () {
   
   expect(expects);
   
-  stop();
+  stop( 10000 );
 
   Popcorn.xhr({
     url: 'data/test.txt', 
@@ -715,7 +955,7 @@ test("JSON Response", function () {
   
   expect(expects);
   
-  stop();
+  stop( 10000 );
 
 
   var testObj = { "data": {"lang": "en", "length": 25} };  
@@ -749,7 +989,7 @@ test("XML Response", function () {
   
   expect(expects);
   
-  stop();
+  stop( 10000 );
 
 
   Popcorn.xhr({
@@ -812,7 +1052,7 @@ test("Events Extended", function () {
     if ( ++count == expects ) start(); 
   }
   
-  stop();  
+  stop( 10000 );  
   
   
   Popcorn.plugin("extendedEvents", (function () {

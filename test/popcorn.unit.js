@@ -35,8 +35,12 @@ test("API", function () {
   } catch (e) {};
 
   try {  
-    
-    Popcorn(function() { ok(1, "Popcorn calls its function argument"); });
+
+    // this works because DOMContentLoaded has already passed, so the
+    // function argument will be executed immediately.
+    var called = false;
+    Popcorn(function() { called = true; alert("called"); });
+    ok(called, "Popcorn calls its function argument.");
     plus();
     
   } catch (e) {};

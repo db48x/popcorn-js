@@ -33,12 +33,17 @@
       video.addEventListener("pause", function() { target.pause(); }, false);
       video.addEventListener("volumechange", function(event)
                              {
-                               target.volume = video.volume;
-                               target.muted = video.muted;
+                               if (options._isIn)
+                               {
+                                 target.volume = video.volume;
+                                 target.muted = video.muted;
+                               }
                              }, false);
+      options._video = video;
     },
     start: function(event, options)
     {
+      options._target.currentTime = options._video.currentTime - options.start;
       options._target.style.visibility = "visible";
       options._target.play();
       options._isIn = true;

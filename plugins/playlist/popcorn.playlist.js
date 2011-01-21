@@ -67,11 +67,14 @@
                              }, false);
       video.addEventListener("volumechange", function()
                              {
-                               var len = tracks.length;
-                               for (var i = 0; i < len; i++)
+                               if (options._isIn)
                                {
-                                 tracks[i].volume = video.volume;
-                                 tracks[i].muted = video.muted;
+                                 var len = tracks.length;
+                                 for (var i = 0; i < len; i++)
+                                 {
+                                   tracks[i].volume = video.volume;
+                                   tracks[i].muted = video.muted;
+                                 }
                                }
                              }, false);
     },

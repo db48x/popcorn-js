@@ -11,8 +11,8 @@
       .volume(0)
       .playanother({
         type: 'video',
-        start: 10, // seconds
-        end: 20, // seconds
+        start: 1, // seconds
+        end: 999, // seconds
         src: '../../test/trailer.ogv',
         width: 250,
         target: 'track1'
@@ -22,8 +22,8 @@
 </head>
 <body>
   <h1 id="qunit-header">Popcorn PlayAnother Plug-in Demo</h1>
-  <p></p>
-  <p></p>
+  <p>This plugin allows you to play a secondary &lt;video&gt; (or &lt;audio&gt;) alongside the first.</p>
+  <p>This demo shows a second copy of the Sintel trailer with a one second delay.</p>
   <div>
     <video id="video" controls preload="auto" width="250px" poster="../../test/poster.png">
       <source id="mp4" src="../../test/trailer.mp4" type='video/mp4; codecs="avc1, mp4a"'>

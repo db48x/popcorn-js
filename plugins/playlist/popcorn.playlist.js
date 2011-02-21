@@ -9,88 +9,87 @@
 
 (function (Popcorn)
 {
-  Popcorn.plugin("playlist",
+  Popcorn.plugin("playlist", function(options)
   {
-    _setup: function(options)
-    {
-      var target = options._target = document.getElementById(options.target),
-          tracks = [];
+    var target = document.getElementById(options.target),
+        tracks = [];
 
-      var len = target.children.length;
+    var len = target.children.length;
+    for (var i = 0; i < len; i++)
+    {
+      var child = target.children[i];
+      if (child.localName == "audio" || child.localName == "video")
+        tracks.push(child);
+    }
+
+    var current = current = tracks[0];
+    var isIn = false;
+
+    len = tracks.length;
+    for (i = 0; i < len; i++)
+    {
+      tracks[i].addEventListener("ended", function() { (current = tracks[(i+1 == len) ? 0 : i+1]).play(); }, false);
+    }
+
+    function pause()
+    {
+      var len = tracks.length;
       for (var i = 0; i < len; i++)
       {
-        var child = target.children[i];
-        if (child.localName == "audio" || child.localName == "video")
-          tracks.push(child);
+        tracks[i].pause();
       }
+    }
 
-      var current = options._current = tracks[0];
-      options._tracks = tracks;
-      options._isIn = false;
+    var self = this;
+    var video = this.video;
+    video.addEventListener("play", function() { if (self.isIn) current.play(); }, false);
+    video.addEventListener("pause", pause, false);
+    video.addEventListener("ended", pause, false);
+    video.addEventListener("seeked", function()
+                           {
+                             var time = video.currentTime;
+                             var len = tracks.length;
+                             for (var i = 0; i < len; i++)
+                             {
+                               var track = tracks[i];
+                               if (time < track.duration && time >= 0)
+                               {
+                                 track.currentTime = time;
+                                 track.play();
+                               }
+                               else
+                                 track.pause();
+                               time -= track.duration;
+                             }
+                           }, false);
+    video.addEventListener("volumechange", function()
+                           {
+                             if (isIn)
+                             {
+                               var len = tracks.length;
+                               for (var i = 0; i < len; i++)
+                               {
+                                 tracks[i].volume = video.volume;
+                                 tracks[i].muted = video.muted;
+                               }
+                             }
+                           }, false);
 
-      len = tracks.length;
-      for (i = 0; i < len; i++)
+    return {
+      start: function(event, options)
       {
-        tracks[i].addEventListener("ended", function() { (options._current = tracks[(i+1 == len) ? 0 : i+1]).play(); }, false);
-      }
-
-      function pause()
+        current.play();
+        isIn = true;
+      },
+      end: function(event, options)
       {
         var len = tracks.length;
         for (var i = 0; i < len; i++)
         {
           tracks[i].pause();
         }
+        isIn = false;
       }
-
-      var self = this;
-      var video = this.video;
-      video.addEventListener("play", function() { if (self.isIn) current.play(); }, false);
-      video.addEventListener("pause", pause, false);
-      video.addEventListener("ended", pause, false);
-      video.addEventListener("seeked", function()
-                             {
-                               var time = video.currentTime;
-                               var len = tracks.length;
-                               for (var i = 0; i < len; i++)
-                               {
-                                 var track = tracks[i];
-                                 if (time < track.duration && time >= 0)
-                                 {
-                                   track.currentTime = time;
-                                   track.play();
-                                 }
-                                 else
-                                   track.pause();
-                                 time -= track.duration;
-                               }
-                             }, false);
-      video.addEventListener("volumechange", function()
-                             {
-                               if (options._isIn)
-                               {
-                                 var len = tracks.length;
-                                 for (var i = 0; i < len; i++)
-                                 {
-                                   tracks[i].volume = video.volume;
-                                   tracks[i].muted = video.muted;
-                                 }
-                               }
-                             }, false);
-    },
-    start: function(event, options)
-    {
-      options._current.play();
-      options._isIn = true;
-    },
-    end: function(event, options)
-    {
-      var len = options._tracks.length;
-      for (var i = 0; i < len; i++)
-      {
-        options._tracks[i].pause();
-      }
-      options._isIn = false;
-   },
+    };
   });
 })(Popcorn);

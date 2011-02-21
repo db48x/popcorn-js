@@ -12,47 +12,45 @@
 
 (function (Popcorn)
 {
-  Popcorn.plugin("playanother",
+  Popcorn.plugin("playanother", function(options)
   {
-    _setup: function(options)
-    {
-      var target = document.createElement(options.type == "audio" ? "audio" : "video");
-      target.setAttribute("src", options.src);
-      target.setAttribute("width", options.width);
-      target.setAttribute("height", options.height);
-      target.setAttribute("id", this.id);
-      target.setAttribute("preload", "auto");
-      document.getElementById(options.target).appendChild(target);
+    var target = document.createElement(options.type == "audio" ? "audio" : "video");
+    target.setAttribute("src", options.src);
+    target.setAttribute("width", options.width);
+    target.setAttribute("height", options.height);
+    target.setAttribute("id", this.id);
+    target.setAttribute("preload", "auto");
+    document.getElementById(options.target).appendChild(target);
 
-      options._target = target;
-      options._isIn = false;
-      target.style.visibility = "hidden";
+    var isIn = false;
+    target.style.visibility = "hidden";
 
-      var video = this.video;
-      video.addEventListener("play", function() { if (options._isIn) target.play(); }, false);
-      video.addEventListener("pause", function() { target.pause(); }, false);
-      video.addEventListener("volumechange", function(event)
+    var video = this.video;
+    video.addEventListener("play", function() { if (isIn) target.play(); }, false);
+    video.addEventListener("pause", function() { target.pause(); }, false);
+    video.addEventListener("volumechange", function(event)
+                           {
+                             if (isIn)
                              {
-                               if (options._isIn)
-                               {
-                                 target.volume = video.volume;
-                                 target.muted = video.muted;
-                               }
-                             }, false);
-      options._video = video;
-    },
-    start: function(event, options)
-    {
-      options._target.currentTime = options._video.currentTime - options.start;
-      options._target.style.visibility = "visible";
-      options._target.play();
-      options._isIn = true;
-    },
-    end: function(event, options)
-    {
-      options._target.pause();
-      options._target.style.visibility = "hidden";
-      options._isIn = false;
-    }
+                               target.volume = video.volume;
+                               target.muted = video.muted;
+                             }
+                           }, false);
+
+    return {
+      start: function(event, options)
+      {
+        target.currentTime = video.currentTime - options.start;
+        target.style.visibility = "visible";
+        target.play();
+        isIn = true;
+      },
+      end: function(event, options)
+      {
+        target.pause();
+        target.style.visibility = "hidden";
+        isIn = false;
+      }
+    };
   });
 })(Popcorn);

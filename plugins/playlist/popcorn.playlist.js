@@ -55,7 +55,8 @@
                     if (time < track.duration && time >= 0)
                     {
                       track.currentTime = time;
-                      track.play();
+                      if (!video.paused)
+                        track.play();
                     }
                     else
                       track.pause();

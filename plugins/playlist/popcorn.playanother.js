@@ -26,9 +26,9 @@
     target.style.visibility = "hidden";
 
     var video = this.video;
-    self.listen("play", function() { if (isIn) target.play(); }, false);
-    self.listen("pause", function() { target.pause(); }, false);
-    self.listen("volumechange", function(event)
+    this.listen("play", function() { if (isIn) target.play(); }, false);
+    this.listen("pause", function() { target.pause(); }, false);
+    this.listen("volumechange", function(event)
                 {
                   if (isIn)
                   {

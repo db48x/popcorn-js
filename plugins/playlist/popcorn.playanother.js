@@ -26,16 +26,16 @@
     target.style.visibility = "hidden";
 
     var video = this.video;
-    video.addEventListener("play", function() { if (isIn) target.play(); }, false);
-    video.addEventListener("pause", function() { target.pause(); }, false);
-    video.addEventListener("volumechange", function(event)
-                           {
-                             if (isIn)
-                             {
-                               target.volume = video.volume;
-                               target.muted = video.muted;
-                             }
-                           }, false);
+    self.listen("play", function() { if (isIn) target.play(); }, false);
+    self.listen("pause", function() { target.pause(); }, false);
+    self.listen("volumechange", function(event)
+                {
+                  if (isIn)
+                  {
+                    target.volume = video.volume;
+                    target.muted = video.muted;
+                  }
+                }, false);
 
     return {
       start: function(event, options)

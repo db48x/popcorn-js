@@ -42,38 +42,38 @@
 
     var self = this;
     var video = this.video;
-    video.addEventListener("play", function() { if (self.isIn) current.play(); }, false);
-    video.addEventListener("pause", pause, false);
-    video.addEventListener("ended", pause, false);
-    video.addEventListener("seeked", function()
-                           {
-                             var time = video.currentTime;
-                             var len = tracks.length;
-                             for (var i = 0; i < len; i++)
-                             {
-                               var track = tracks[i];
-                               if (time < track.duration && time >= 0)
-                               {
-                                 track.currentTime = time;
-                                 track.play();
-                               }
-                               else
-                                 track.pause();
-                               time -= track.duration;
-                             }
-                           }, false);
-    video.addEventListener("volumechange", function()
-                           {
-                             if (isIn)
-                             {
-                               var len = tracks.length;
-                               for (var i = 0; i < len; i++)
-                               {
-                                 tracks[i].volume = video.volume;
-                                 tracks[i].muted = video.muted;
-                               }
-                             }
-                           }, false);
+    self.listen("play", function() { if (self.isIn) current.play(); }, false);
+    self.listen("pause", pause, false);
+    self.listen("ended", pause, false);
+    self.listen("seeked", function()
+                {
+                  var time = video.currentTime;
+                  var len = tracks.length;
+                  for (var i = 0; i < len; i++)
+                  {
+                    var track = tracks[i];
+                    if (time < track.duration && time >= 0)
+                    {
+                      track.currentTime = time;
+                      track.play();
+                    }
+                    else
+                      track.pause();
+                    time -= track.duration;
+                  }
+                }, false);
+    self.listen("volumechange", function()
+                {
+                  if (isIn)
+                  {
+                    var len = tracks.length;
+                    for (var i = 0; i < len; i++)
+                    {
+                      tracks[i].volume = video.volume;
+                      tracks[i].muted = video.muted;
+                    }
+                  }
+                }, false);
 
     return {
       start: function(event, options)

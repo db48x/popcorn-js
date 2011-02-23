@@ -28,6 +28,13 @@
     var video = this.video;
     this.listen("play", function() { if (isIn) target.play(); }, false);
     this.listen("pause", function() { target.pause(); }, false);
+    this.listen("seeked", function()
+                {
+                  var time = video.currentTime - options.start;
+                  target.currentTime = time;
+                  if (!video.paused)
+                    target.play();
+                }, false);
     this.listen("volumechange", function(event)
                 {
                   if (isIn)

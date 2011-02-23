@@ -42,7 +42,7 @@
 
     var self = this;
     var video = this.video;
-    self.listen("play", function() { if (self.isIn) current.play(); }, false);
+    self.listen("play", function() { if (isIn) current.play(); }, false);
     self.listen("pause", pause, false);
     self.listen("ended", pause, false);
     self.listen("seeked", function()
